@@ -1,0 +1,5 @@
+secrets.yaml
+secrets.json
+__pycache__/
+___Xml/
+*.log
