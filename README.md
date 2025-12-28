@@ -1,63 +1,60 @@
 # SharePoint Batch Download
 
-Esta ferramenta em Python automatiza o processo de download de anexos (submissões) a partir de feeds RSS do SharePoint (ficheiros XML). O script analisa o XML, identifica links de anexos nas descrições e organiza os ficheiros descarregados em pastas baseadas no nome do autor.
+Esta ferramenta em Python automatiza o processo de download de anexos (submissões) a partir de feeds RSS do SharePoint (ficheiros XML). Ela analisa o XML, identifica os links dos anexos nas descrições e organiza os ficheiros descarregados em pastas com base no nome do autor.
 
 ## Funcionalidades
 
-- **Processamento em Lote**: Processa automaticamente todos os ficheiros XML encontrados na diretoria `___Xml` (ou na pasta base).
-- **Saída Organizada**: Cria uma pasta específica para cada autor e guarda lá os respetivos anexos.
+- **Processamento em Lote**: Processa automaticamente todos os ficheiros XML encontrados na pasta `___Xml` (ou na pasta base).
+- **Saída Organizada**: Cria uma pasta específica para cada autor e guarda aí os respetivos anexos.
 - **Gestão de Autenticação**: 
-  - Utiliza cookies `rtFa` e `FedAuth` para autenticação no SharePoint.
-  - Inclui uma janela pop-up (GUI) para colar e atualizar facilmente os cookies quando estes expiram.
-  - Suporta a colagem de cabeçalhos de cookies brutos ou exportações JSON.
-- **Registos (Logging)**: Gera um ficheiro de log CSV para cada XML processado, detalhando o estado de cada download (Sucesso, Falhou, Existe, URL).
-- **Notificações**: Integração opcional com o Telegram para enviar atualizações de estado.
-- **Robustez**: Inclui lógica de repetição (retry) com *exponential backoff* para pedidos de rede e higienização de nomes de ficheiros.
+  - Utiliza os cookies `rtFa` e `FedAuth` para autenticação no SharePoint.
+  - Inclui uma janela GUI para colar e atualizar facilmente os cookies quando expiram.
+  - Suporta colagem de cabeçalhos de cookies brutos ou exportações em JSON.
+- **Registo (Logging)**: Gera um ficheiro CSV de log para cada XML processado, com o estado de cada download (Sucesso, Falhou, Existe, URL).
+- **Notificações**: Integração opcional com o Telegram para envio de atualizações de estado.
+- **Robustez**: Inclui lógica de repetição (retry) com backoff exponencial para pedidos de rede e sanitização de nomes de ficheiros.
 
 ## Pré-requisitos
 
-- Python 3.x
+- Python 3.6+
 - Pacotes Python necessários:
-  ```bash
-  pip install requests beautifulsoup4 python-telegram-bot
-  ```
-  *(Note: `tkinter` is required for the GUI, which is typically included with standard Python installations)*
+- pip install requests beautifulsoup4 python-telegram-bot
 
-## Setup
+*(Nota: o `tkinter` é necessário para a GUI e normalmente já vem incluído nas instalações padrão do Python)*
 
-1. **Clone the repository**.
-2. **Configure Paths**:
-   Open `Sharepoint_download_submitions.py` and check the `BASE_FOLDER` variable. You may want to change this to your preferred working directory:
-   ```python
-   BASE_FOLDER = r"C:\Path\To\Your\Output\Folder"
-   ```
-3. **Prepare XML Files**:
-   Export your SharePoint list/library as an RSS Feed (XML). Place these XML files in a folder named `___Xml` inside your `BASE_FOLDER` (or directly in the `BASE_FOLDER` if the subfolder doesn't exist).
+## Configuração
 
-## Usage
+1. **Clonar o repositório**.
+2. **Configurar Caminhos**:
+ Abra o ficheiro `Sharepoint_download_submitions.py` e verifique a variável `BASE_FOLDER`. Pode alterá-la para o seu diretório de trabalho preferido:
 
-Run the script via the terminal:
+BASE_FOLDER = r"C:\Caminho\Para\Sua\Pasta\De\Saída"
 
-```bash
+3. **Preparar os Ficheiros XML**:
+Exporte a sua lista/biblioteca do SharePoint como um feed RSS (XML). Coloque estes ficheiros XML numa pasta chamada `___Xml` dentro da sua `BASE_FOLDER` (ou diretamente na `BASE_FOLDER` se a subpasta não existir).
+
+## Utilização
+
+Execute o script através do terminal:
 python Sharepoint_download_submitions.py
-```
 
-### Authentication
-If the script cannot find valid cookies (or if they have expired), a popup window will appear.
-1. Log in to your SharePoint site in a web browser.
-2. Open Developer Tools (F12) -> **Application** (or Storage) -> **Cookies**.
-3. Locate the cookies named `rtFa` and `FedAuth`.
-4. Copy their values (or the entire cookie header string).
-5. Paste them into the script's popup window.
 
-### Telegram Notifications (Optional)
-When prompted by the GUI (or by editing `secrets.json` manually), you can provide a Telegram Bot Token and Chat ID to receive notifications when processing finishes.
+### Autenticação
+Se o script não encontrar cookies válidos (ou se já tiverem expirado), surgirá uma janela popup.
+1. Inicie sessão no seu site SharePoint num navegador web.
+2. Abra as Ferramentas de Programador (F12) -> **Application** (ou Armazenamento) -> **Cookies**.
+3. Procure os cookies com os nomes `rtFa` e `FedAuth`.
+4. Copie os valores (ou todo o cabeçalho de cookies).
+5. Cole-os na janela popup do script.
 
-## Output
+### Notificações no Telegram (Opcional)
+Quando solicitado pela GUI (ou editando manualmente o `secrets.json`), pode fornecer um Token de Bot e um ID de Chat do Telegram para receber notificações quando o processamento terminar.
 
-- **Files**: Saved in `BASE_FOLDER/<Author_Name>/<Filename>`.
-- **Logs**: A CSV file (e.g., `download_log_filename.csv`) is generated in the `BASE_FOLDER` containing the download history.
-- **Secrets**: A `secrets.json` file is created locally to store your cookies and tokens securely.
+## Saída
+
+- **Ficheiros**: Guardados em `BASE_FOLDER/<Nome_Autor>/<Nome_Ficheiro>`.
+- **Registos**: Um ficheiro CSV (por exemplo, `download_log_nomeficheiro.csv`) é gerado em `BASE_FOLDER`, contendo o histórico de downloads.
+- **Segredos**: Um ficheiro `secrets.json` é criado localmente para armazenar com segurança os seus cookies e tokens.
 
 
 # SharePoint Batch Download
