@@ -22,13 +22,22 @@ Esta ferramenta em Python automatiza o processo de download de anexos (submissõ
 
 *(Nota: o `tkinter` é necessário para a GUI e normalmente já vem incluído nas instalações padrão do Python)*
 
+### macOS Specific Note (Tkinter)
+  The script uses a GUI popup for cookies (tkinter).
+
+  Standard Python: If you installed Python from python.org, tkinter is included.
+  Homebrew: If you installed Python via Homebrew (brew install python), you might need to install the GUI toolkit separately:
+  bash
+  brew install python-tk
+
+
+
 ## Configuração
 
 1. **Clonar o repositório**.
 2. **Configurar Caminhos**:
- Abra o ficheiro `Sharepoint_download_submitions.py` e verifique a variável `BASE_FOLDER`. Pode alterá-la para o seu diretório de trabalho preferido:
-
-BASE_FOLDER = r"C:\Caminho\Para\Sua\Pasta\De\Saída"
+   Por defeito, o script utiliza a pasta onde está localizado como `BASE_FOLDER`.
+   Os downloads e ficheiros de configuração ficarão na mesma pasta do script.
 
 3. **Preparar os Ficheiros XML**:
 Exporte a sua lista/biblioteca do SharePoint como um feed RSS (XML). Coloque estes ficheiros XML numa pasta chamada `___Xml` dentro da sua `BASE_FOLDER` (ou diretamente na `BASE_FOLDER` se a subpasta não existir).
@@ -81,15 +90,22 @@ This Python tool automates the process of downloading attachments (submissions) 
   pip install requests beautifulsoup4 python-telegram-bot
   ```
   *(Note: `tkinter` is required for the GUI, which is typically included with standard Python installations)*
+  
+  ### macOS Specific Note (Tkinter)
+    The script uses a GUI popup for cookies (tkinter).
+
+    Standard Python: If you installed Python from python.org, tkinter is included.
+    Homebrew: If you installed Python via Homebrew (brew install python), you might need to install the GUI toolkit separately:
+    bash
+    brew install python-tk
 
 ## Setup
 
 1. **Clone the repository**.
 2. **Configure Paths**:
-   Open `Sharepoint_download_submitions.py` and check the `BASE_FOLDER` variable. You may want to change this to your preferred working directory:
-   ```python
-   BASE_FOLDER = r"C:\Path\To\Your\Output\Folder"
-   ```
+   By default, the script uses the directory where it is located as the `BASE_FOLDER`.
+   Downloads and configuration files will be stored in the same folder as the script.
+
 3. **Prepare XML Files**:
    Export your SharePoint list/library as an RSS Feed (XML). Place these XML files in a folder named `___Xml` inside your `BASE_FOLDER` (or directly in the `BASE_FOLDER` if the subfolder doesn't exist).
 

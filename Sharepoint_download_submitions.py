@@ -1,4 +1,4 @@
-import os, requests, time, csv, random,asyncio, telegram, re, json, unicodedata
+import os, requests, time, csv, random, asyncio, telegram, re, json, unicodedata
 import xml.etree.ElementTree as ET
 from html import unescape
 from bs4 import BeautifulSoup
@@ -7,7 +7,8 @@ import tkinter as tk
 from tkinter import simpledialog, messagebox
 
 # --- 1. CONFIGURAÇÕES E VARIÁVEIS GLOBAIS ---
-BASE_FOLDER = r"C:\Users\alvar\Desktop\pythonUMAIA"
+# Define a pasta base como a diretoria onde o script está localizado
+BASE_FOLDER = os.path.dirname(os.path.abspath(__file__))
 SECRETS_FILE = os.path.join(BASE_FOLDER, "secrets.json")
 
 
