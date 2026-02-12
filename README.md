@@ -57,7 +57,9 @@ Se o script não encontrar cookies válidos (ou se já tiverem expirado), surgir
 5. Cole-os na janela popup do script.
 5. Em alternativa poderá colar os cookies  `rtFa` e `FedAuth` antes de executar o script, caso facilite.
 
-https://github.com/user-attachments/assets/8e6175a4-034b-40c9-a19d-a75820e02fd2
+https://github.com/user-attachments/assets/45b6e3ed-7b05-4514-a433-673cc5f9f1c9
+
+
 
 ## Utilização
 
