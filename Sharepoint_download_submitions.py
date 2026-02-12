@@ -1,4 +1,4 @@
-import os, requests, time, csv, random, asyncio, telegram, re, json, unicodedata
+import os, requests, time, csv, random, re, json, unicodedata
 import xml.etree.ElementTree as ET
 from html import unescape
 from bs4 import BeautifulSoup
@@ -7,10 +7,8 @@ import tkinter as tk
 from tkinter import simpledialog, messagebox
 
 # --- 1. CONFIGURAÇÕES E VARIÁVEIS GLOBAIS ---
-# Define a pasta base como a diretoria onde o script está localizado
 BASE_FOLDER = os.path.dirname(os.path.abspath(__file__))
 SECRETS_FILE = os.path.join(BASE_FOLDER, "secrets.json")
-
 
 def atualizar_cookies_gui():
     """Janela Pop-up para colar cookies novos"""
@@ -28,77 +26,57 @@ def atualizar_cookies_gui():
         messagebox.showerror("Erro", "Cancelado pelo utilizador.")
         exit()
 
-    # First try: parse pasted text as JSON (handles cookie-export arrays from browser devtools)
     novos_cookies = {}
     try:
         parsed = json.loads(raw_text)
-        # If it's a list (cookie export), look for objects with name == rtFa/FedAuth
         if isinstance(parsed, list):
             for obj in parsed:
-                if not isinstance(obj, dict):
-                    continue
+                if not isinstance(obj, dict): continue
                 name = obj.get('name') or obj.get('Name')
                 val = obj.get('value') or obj.get('Value')
                 if name and val:
-                    if name == 'rtFa':
-                        novos_cookies['rtFa'] = val
-                    if name == 'FedAuth':
-                        novos_cookies['FedAuth'] = val
+                    if name == 'rtFa': novos_cookies['rtFa'] = val
+                    if name == 'FedAuth': novos_cookies['FedAuth'] = val
         elif isinstance(parsed, dict):
-            # Nested structures like {"cookies": {"rtFa": "..."}}
             if 'cookies' in parsed and isinstance(parsed['cookies'], dict):
-                if 'rtFa' in parsed['cookies']:
-                    novos_cookies['rtFa'] = parsed['cookies']['rtFa']
-                if 'FedAuth' in parsed['cookies']:
-                    novos_cookies['FedAuth'] = parsed['cookies']['FedAuth']
-            # direct keys
+                if 'rtFa' in parsed['cookies']: novos_cookies['rtFa'] = parsed['cookies']['rtFa']
+                if 'FedAuth' in parsed['cookies']: novos_cookies['FedAuth'] = parsed['cookies']['FedAuth']
             if 'rtFa' in parsed and isinstance(parsed['rtFa'], str):
                 novos_cookies['rtFa'] = parsed['rtFa']
             if 'FedAuth' in parsed and isinstance(parsed['FedAuth'], str):
                 novos_cookies['FedAuth'] = parsed['FedAuth']
     except Exception:
-        # not JSON — fall back to regex parsing below
         pass
 
-    # If JSON parsing didn't find both, try multiple regex patterns
     if not (novos_cookies.get('rtFa') and novos_cookies.get('FedAuth')):
         rtFa_match = re.search(r"rtFa[\"'=:\s]+([^;\"',}\s]+)", raw_text)
         FedAuth_match = re.search(r"FedAuth[\"'=:\s]+([^;\"',}\s]+)", raw_text)
 
-        # JSON-like: "rtFa":"..."
-        if not rtFa_match:
-            rtFa_match = re.search(r'"rtFa"\s*:\s*"([^"]+)"', raw_text)
-        if not FedAuth_match:
-            FedAuth_match = re.search(r'"FedAuth"\s*:\s*"([^"]+)"', raw_text)
+        if not rtFa_match: rtFa_match = re.search(r'"rtFa"\s*:\s*"([^"]+)"', raw_text)
+        if not FedAuth_match: FedAuth_match = re.search(r'"FedAuth"\s*:\s*"([^"]+)"', raw_text)
+        if not rtFa_match: rtFa_match = re.search(r"rtFa=([^;\s]+)", raw_text)
+        if not FedAuth_match: FedAuth_match = re.search(r"FedAuth=([^;\s]+)", raw_text)
 
-        # cookie header style: rtFa=...; FedAuth=...;
-        if not rtFa_match:
-            rtFa_match = re.search(r"rtFa=([^;\s]+)", raw_text)
-        if not FedAuth_match:
-            FedAuth_match = re.search(r"FedAuth=([^;\s]+)", raw_text)
+        if rtFa_match: novos_cookies['rtFa'] = rtFa_match.group(1).strip().strip('"')
+        if FedAuth_match: novos_cookies['FedAuth'] = FedAuth_match.group(1).strip().strip('"')
 
-        if rtFa_match:
-            novos_cookies['rtFa'] = rtFa_match.group(1).strip().strip('"')
-        if FedAuth_match:
-            novos_cookies['FedAuth'] = FedAuth_match.group(1).strip().strip('"')
-
-    # If still missing, show an error and re-prompt
     if not (novos_cookies.get('rtFa') and novos_cookies.get('FedAuth')):
-        messagebox.showerror("Erro", "Não encontrei rtFa/FedAuth no texto. Por favor cole o Cookie header ou o JSON com os campos rtFa e FedAuth.")
+        messagebox.showerror("Erro", "Não encontrei rtFa/FedAuth. Tente novamente.")
         root.destroy()
         return atualizar_cookies_gui()
 
-    data = {"telegram_token": "", "chat_id": 0}
+    # Carregar dados existentes para não perder os feeds
+    data = {"telegram_token": "", "chat_id": 0, "sharepoint_feeds": []}
     if os.path.exists(SECRETS_FILE):
         try:
             with open(SECRETS_FILE, "r", encoding="utf-8") as f:
-                data = json.load(f)
+                existing_data = json.load(f)
+                data.update(existing_data) # Mantém feeds e outros dados
         except:
             pass
 
     data["cookies"] = novos_cookies
 
-    # Se não tiver token, pede
     if not data.get("telegram_token"):
         data["telegram_token"] = simpledialog.askstring("Telegram", "Token Bot (Opcional):", parent=root) or ""
         try:
@@ -113,7 +91,6 @@ def atualizar_cookies_gui():
     root.destroy()
     return data
 
-
 def load_secrets():
     if not os.path.exists(SECRETS_FILE):
         return atualizar_cookies_gui()
@@ -126,7 +103,6 @@ def load_secrets():
     except:
         return atualizar_cookies_gui()
 
-
 headers = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
     "Accept": "*/*",
@@ -134,10 +110,9 @@ headers = {
     "Referer": "https://ismaipt.sharepoint.com/",
 }
 
-print("🔑 A carregar credenciais...")
+print("A carregar credenciais...")
 secrets = load_secrets()
 
-# Criação da Sessão Global
 session = requests.Session()
 if secrets and isinstance(secrets.get('cookies'), dict):
     session.cookies.update(secrets['cookies'])
@@ -149,62 +124,35 @@ session.headers.update({
 MY_TOKEN = secrets.get('telegram_token') if secrets else ""
 CHAT_ID = secrets.get('chat_id') if secrets else 0
 
-print("Session cookies:", session.cookies.get_dict())
-
-# Default XML folder inside workspace (there's a ___Xml directory in the repo)
-XML_DIR = os.path.join(BASE_FOLDER, "___Xml")
-if not os.path.isdir(XML_DIR):
-    XML_DIR = BASE_FOLDER
-
-# List all XML files in the XML directory
-xml_files = [f for f in os.listdir(XML_DIR) if f.lower().endswith('.xml')]
-
-# Allowed extensions. Set to None to accept all file extensions (no filtering).
-allowed_extensions = None  # or set to a set([...]) to restrict
-# Extensões permitidas
-#allowed_extensions = {".3g2",".3gp",".7z",".aac",".ai",".aif",".aiff",".af",".arw",".avi",".bmp",".bz2",".cr2",".csv",".dng",".doc",".docx",".eps",".flac",".flv",".gif",".gz",".heic",".heif",".htm",".html",".ico",".indd",".jpeg",".jpg",".json",".m4a",".m4v",".mkv",".mov",".mp3",".mp4",".mpeg",".mpg",".nef",".nrw",".odg",".odp",".ods",".odt",".ogg",".orf",".pdf",".pef",".png",".pps",".ppsx",".ppt",".pptx",".psd",".rar",".raw",".rtf",".rw2",".rwl",".sr2",".svg",".tar",".tif",".tiff",".txt",".url",".wav",".webm",".webp",".wma",".wmv",".xls",".xlsx",".xml",".xmp",".xz",".zip",".drp",".sketch",".xcf",".md",".tex",".log",".ini",".yaml",".yml",".toml",".xlsb",".tsv",".sav",".dta",".parquet",".avif",".xcf",".skp",".blend",".stl",".obj",".fbx",".braw",".mts",".vob",".mxf",".opus",".mid",".midi",".caf",".tar.gz",".tar.xz",".zst",".cab",".dmg",".iso",".py",".java",".cpp",".c",".cs",".sh",".bat",".ps1",".r",".jl",".go",".swift",".kt",".dart",".sql",".db",".mdb",".accdb",".sqlite3",".cfg",".plist",".reg"}
-
-
+# Allowed extensions
+allowed_extensions = None 
 
 def clean_url(url):
-    #Corrige espaços e caracteres HTML nas URLs.
     return quote(unescape(url).strip(), safe=":/")
 
-
 def extract_attachment_links(description):
-    #Extrai links corretamente da tag <description>.
     if description is None:
-        return []  # Retorna lista vazia se description não existir
-
+        return []
     soup = BeautifulSoup(description, "html.parser")
     links = [clean_url(a["href"]) for a in soup.find_all("a", href=True)]
     return links
 
-
 def get_filename_from_url(url):
-    #Extrai o nome do ficheiro da URL.
     raw = os.path.basename(url.split("?")[0])
-    # Decode percent-encoding (e.g., "%C3%A9" -> "é ") and plus->space
     decoded = unquote(raw)
     decoded = decoded.replace('+', ' ')
     return decoded
 
-
 def is_valid_file(url):
-    #Verifica se a URL tem uma extensão válida.
-    # If allowed_extensions is None, accept all files
     if not allowed_extensions:
         return True
     lower = url.lower()
     return any(lower.endswith(ext) for ext in allowed_extensions)
 
-
 def download_file(url, folder, retries=6):
-    """Download com tentativas e backoff. Retorna (filename, status)."""
     filename = get_filename_from_url(url)
     file_path = os.path.join(folder, filename)
 
-    # If already exists, skip
     if os.path.exists(file_path) and os.path.getsize(file_path) > 0:
         return filename, "Existia"
 
@@ -219,18 +167,7 @@ def download_file(url, folder, retries=6):
             content_type = response.headers.get("Content-Type", "")
             content_length = response.headers.get("Content-Length")
 
-            print(f"   status={response.status_code} content-type={content_type} content-length={content_length}")
-
-            # basic heuristic to avoid HTML errors
             if "text/html" in content_type or (content_length and int(content_length) < 100):
-                # save debug HTML to file for inspection
-                try:
-                    debug_path = os.path.join(folder, f"{filename}.debug.html")
-                    with open(debug_path, "wb") as dbg:
-                        dbg.write(response.content[:10000])
-                    print(f"   -> saved debug HTML: {debug_path}")
-                except Exception as e:
-                    print(f"   -> failed saving debug html: {e}")
                 return filename, f"Falhou: HTML recebido (status {response.status_code})"
 
             with open(file_path, "wb") as f:
@@ -238,9 +175,8 @@ def download_file(url, folder, retries=6):
                     if chunk:
                         f.write(chunk)
 
-            # small validation
             if os.path.exists(file_path) and os.path.getsize(file_path) > 0:
-                print(f"   -> saved file: {file_path} ({os.path.getsize(file_path)} bytes)")
+                print(f"   -> saved file: {file_path}")
                 return filename, "Sucesso"
             else:
                 return filename, "Falhou: ficheiro vazio"
@@ -253,21 +189,7 @@ def download_file(url, folder, retries=6):
             else:
                 return filename, f"Falhou: {e}"
 
-
-def validar_ficheiro(file_path):
-    """ Verifica se o ficheiro tem um tamanho razoável """
-    if not os.path.exists(file_path):
-        return False
-
-    tamanho = os.path.getsize(file_path)
-    if tamanho < 1:  # Se for muito pequeno, pode estar corrompido
-        print(f"⚠️ Ficheiro suspeito (tamanho pequeno): {file_path}")
-        return False
-    return True
-
-
 def send_message(text):
-    """Send a Telegram message if token and chat id are configured. Safe no-op otherwise."""
     if not MY_TOKEN or not CHAT_ID:
         print(f"Telegram not configured. Message: {text}")
         return False
@@ -280,56 +202,76 @@ def send_message(text):
         print(f"Telegram send failed: {e}")
         return False
 
-
 def sanitize_name(name: str) -> str:
-    """Sanitize folder/file names to safe filesystem names."""
     if not name:
         return "Unknown"
-    # Normalize accents
     name = unicodedata.normalize('NFKD', name)
     name = name.encode('ascii', 'ignore').decode('ascii')
-    # Replace problematic chars
+    # Permitir hífens e espaços, remover outros caracteres problemáticos
     name = re.sub(r'[<>:\\"/\\|?*]', '_', name)
     name = re.sub(r'\s+', ' ', name).strip()
     if not name:
         return 'Unknown'
     return name
 
-
-def process_xml(xml_path_or_url):
-    """Ler o XML (do ficheiro local ou URL), faz o download e guarda o registo num CSV.
-
-    xml_path_or_url: either a local file path or an http(s) URL
+def process_xml(url_feed, feed_name_fallback):
     """
-    # Load XML content
-    xml_content = None
-    source_name = xml_path_or_url
+    url_feed: URL do feed RSS
+    feed_name_fallback: Nome definido manualmente no JSON, caso a extração falhe
+    """
+    print(f"\n--- A processar Feed: {feed_name_fallback} ---")
+    
+    # Download do XML
     try:
-        if str(xml_path_or_url).lower().startswith('http'):
-            resp = session.get(xml_path_or_url, timeout=30)
-            resp.raise_for_status()
-            xml_content = resp.content
-        else:
-            if not os.path.exists(xml_path_or_url):
-                print(f"XML não encontrado: {xml_path_or_url}")
-                return
-            with open(xml_path_or_url, 'rb') as f:
-                xml_content = f.read()
+        resp = session.get(url_feed, timeout=30)
+        resp.raise_for_status()
+        xml_content = resp.content
     except Exception as e:
-        print(f"Erro a ler XML {xml_path_or_url}: {e}")
+        print(f"Erro a baixar XML de {url_feed}: {e}")
         return
 
     try:
         root = ET.fromstring(xml_content)
     except ET.ParseError as e:
-        print(f"Erro a parsear XML: {e}")
+        print(f"Erro parse XML: {e}")
         return
 
-    # Prepare CSV log
-    base_name = os.path.splitext(os.path.basename(source_name))[0]
-    csv_file = os.path.join(BASE_FOLDER, f"download_log_{base_name}.csv")
+    # --- NOVA LÓGICA: Extrair Título do Canal para Nome da Pasta ---
+    channel = root.find("channel")
+    folder_context = feed_name_fallback # Fallback inicial
+
+    if channel is not None:
+        title_node = channel.find("title")
+        if title_node is not None and title_node.text:
+            raw_title = title_node.text
+            print(f"Título do Feed encontrado: '{raw_title}'")
+            
+            # Tenta separar por " : "
+            # Ex: "FEED RSS para UMAIA : 25-26 : TIC : 1º : ITIC : Turma A: Entrega de Trabalhos"
+            parts = raw_title.split(" : ")
+            
+            # Se tiver pelo menos 6 partes, assumimos que:
+            # Índice 4 = Disciplina (ex: ITIC)
+            # Índice 5 = Turma (ex: Turma A)
+            if len(parts) >= 6:
+                subject = parts[4].strip()
+                class_name = parts[5].strip()
+                # Limpar caracteres extra se houver " : " colado
+                class_name = class_name.split(":")[0].strip() 
+                
+                folder_context = f"{subject} - {class_name}"
+            else:
+                print("Aviso: Formato do título não corresponde ao padrão esperado para extração. A usar nome do JSON.")
+
+    # Sanitizar o nome da pasta da disciplina
+    folder_context = sanitize_name(folder_context)
+    #print(f"Pasta de Destino do Feed: [{folder_context}]")
+
+    # CSV Log por feed
+    csv_file = os.path.join(BASE_FOLDER, f"log_{folder_context}.csv")
     download_rows = []
 
+    # Iterar itens
     for item in root.findall('.//item'):
         title = item.find('title').text if item.find('title') is not None else ''
         author = item.find('author').text if item.find('author') is not None else 'Unknown'
@@ -340,38 +282,50 @@ def process_xml(xml_path_or_url):
 
         attachment_links = extract_attachment_links(description)
 
-        target_folder = os.path.join(BASE_FOLDER, author)
+        # Caminho: Base -> Disciplina-Turma -> Autor
+        target_folder = os.path.join(BASE_FOLDER, folder_context, author)
         os.makedirs(target_folder, exist_ok=True)
 
         if not attachment_links:
-            # nothing to download, write a row indicating no attachments
-            download_rows.append([title, author, '', 'Nenhum anexo encontrado', pubDate, comments])
+            download_rows.append([title, author, '', 'Nenhum anexo', pubDate, comments, ''])
             continue
 
         for link in attachment_links:
-            if not link:
-                continue
-            print(f"Encontrado ficheiro: {link} (autor: {author})")
+            if not link: continue
+            #print(f"Ficheiro de {author}: {link}")
             filename, status = download_file(link, target_folder)
             download_rows.append([title, author, filename, status, pubDate, comments, link])
-            time.sleep(random.uniform(0.5, 2.0))
+            time.sleep(random.uniform(0.5, 1.5))
 
-    # Save CSV
+    # Guardar CSV
     try:
-        with open(csv_file, mode='w', newline='', encoding='utf-8') as f:
+        with open(csv_file, mode='a', newline='', encoding='utf-8') as f: # Mode 'a' para append ou 'w' se quiseres resetar sempre
             writer = csv.writer(f)
-            writer.writerow(['Title', 'Author', 'Filename', 'Status', 'PubDate', 'Comments', 'URL'])
+            # Se o ficheiro estiver vazio, escreve header
+            if f.tell() == 0:
+                writer.writerow(['Title', 'Author', 'Filename', 'Status', 'PubDate', 'Comments', 'URL'])
             writer.writerows(download_rows)
-        print(f"📄 CSV criado: {csv_file}")
     except Exception as e:
         print(f"Erro a escrever CSV: {e}")
-
+    
+    return folder_context
 
 if __name__ == '__main__':
-    # Process each XML file found in XML_DIR
-    for xml_file in xml_files:
-        xml_path = os.path.join(XML_DIR, xml_file)
-        print(f"Processing: {xml_path}")
-        process_xml(xml_path)
-        msg = f"Processing finished: {xml_path}"
-        send_message(msg)
+    # Buscar lista de feeds ao ficheiro secrets
+    feeds_list = secrets.get("sharepoint_feeds", [])
+
+    if not feeds_list:
+        print("Nenhum feed encontrado em 'secrets.json'.")
+    else:
+        for feed in feeds_list:
+            url = feed.get("rss_url")
+            nome_fallback = feed.get("nome", "SemNome")
+            
+            if url:
+                processed_folder = process_xml(url, nome_fallback)
+                msg = f"Processamento concluído para: {processed_folder}"
+                send_message(msg)
+            else:
+                print(f"Feed '{nome_fallback}' sem URL válido.")
+    
+    print("--- FIM ---")
