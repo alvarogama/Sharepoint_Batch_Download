@@ -4,7 +4,7 @@ Esta ferramenta em Python automatiza o processo de download de anexos (submissõ
 
 ## Funcionalidades
 
-- **Processamento em Lote**: Processa automaticamente todos os ficheiros XML encontrados na pasta `___Xml` (ou na pasta base).
+- **Processamento em Lote**: Processa automaticamente todos os link da lista em XML encontrados no ficheiro `secrets.json` ( Ver amostra sample-secrets.json ).
 - **Saída Organizada**: Cria uma pasta específica para cada autor e guarda aí os respetivos anexos.
 - **Gestão de Autenticação**: 
   - Utiliza os cookies `rtFa` e `FedAuth` para autenticação no SharePoint.
@@ -18,7 +18,7 @@ Esta ferramenta em Python automatiza o processo de download de anexos (submissõ
 
 - Python 3.6+
 - Pacotes Python necessários:
-- pip install requests beautifulsoup4 python-telegram-bot
+  - pip install requests beautifulsoup4
 
 *(Nota: o `tkinter` é necessário para a GUI e normalmente já vem incluído nas instalações padrão do Python)*
 
@@ -40,21 +40,34 @@ Esta ferramenta em Python automatiza o processo de download de anexos (submissõ
    Os downloads e ficheiros de configuração ficarão na mesma pasta do script.
 
 3. **Preparar os Ficheiros XML**:
-Exporte a sua lista/biblioteca do SharePoint como um feed RSS (XML). Coloque estes ficheiros XML numa pasta chamada `___Xml` dentro da sua `BASE_FOLDER` (ou diretamente na `BASE_FOLDER` se a subpasta não existir).
+Copie o link da sua lista/biblioteca do SharePoint como um feed RSS (XML). Coloque esses links no ficheiro chamada `secrets.json` dentro da sua `BASE_FOLDER` (ou diretamente na `BASE_FOLDER` se a subpasta não existir).
+
+
+https://github.com/user-attachments/assets/13e1d43b-d690-403c-862b-077a32d4e4b1
+
+
 
 ## Utilização
 
-Execute o script através do terminal:
+Execute o script através do terminal (com o caminho dentro da pasta):
 python Sharepoint_download_submitions.py
 
 
 ### Autenticação
 Se o script não encontrar cookies válidos (ou se já tiverem expirado), surgirá uma janela popup.
 1. Inicie sessão no seu site SharePoint num navegador web.
-2. Abra as Ferramentas de Programador (F12) -> **Application** (ou Armazenamento) -> **Cookies**.
-3. Procure os cookies com os nomes `rtFa` e `FedAuth`.
+2. Abra as Ferramentas de Programador (F12) -> **Network** (ou Rede) -> **CTRL+R**.
+3. Pesquise os cookies com os nomes `rtFa` e `FedAuth` usando a barra de pesquisa e colocando `cookie-domain:sharepoint.com`.
 4. Copie os valores (ou todo o cabeçalho de cookies).
 5. Cole-os na janela popup do script.
+5. Em alternativa poderá colar os cookies  `rtFa` e `FedAuth` antes de executar o script, caso facilite.
+<video width="320" height="240" controls>
+  <source src="video.mov" type="video/mp4">
+</video>
+
+https://github.com/user-attachments/assets/8e6175a4-034b-40c9-a19d-a75820e02fd2
+
+
 
 ### Notificações no Telegram (Opcional)
 Quando solicitado pela GUI (ou editando manualmente o `secrets.json`), pode fornecer um Token de Bot e um ID de Chat do Telegram para receber notificações quando o processamento terminar.
