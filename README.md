@@ -1,6 +1,6 @@
 # SharePoint Batch Download
 
-Esta ferramenta em Python automatiza o processo de download de anexos (submissões) a partir de feeds RSS do SharePoint (ficheiros XML). Ela analisa o XML, identifica os links dos anexos nas descrições e organiza os ficheiros descarregados em pastas com base no nome do autor.
+Esta ferramenta em Python automatiza o processo de download de anexos (submissões) a partir de feeds RSS do SharePoint. Analisa as listas fornecidas, identifica os links dos anexos nas descrições e organiza os ficheiros descarregados em pastas com base no nome do autor.
 
 ## Funcionalidades
 
@@ -80,7 +80,7 @@ This Python tool automates the process of downloading attachments (submissions) 
 
 ## Features
 
-- **Batch Processing**: Automatically processes all XML files found in the `___Xml` directory (or the base folder).
+- **Batch Processing**: Automatically processes all lists found in the `secrets.json` file.
 - **Organized Output**: Creates a specific folder for each author and saves their attachments there.
 - **Authentication Handling**: 
   - Uses `rtFa` and `FedAuth` cookies for SharePoint authentication.
