@@ -20,7 +20,9 @@ Esta ferramenta em Python automatiza o processo de download de anexos (submissõ
 - Pacotes Python necessários:
 - 1. requests
   2. beautifulsoup4
-- **pip install requests beautifulsoup4**
+```bash
+  pip install requests beautifulsoup4
+  ```
 
 *(Nota: o `tkinter` é necessário para a GUI e normalmente já vem incluído nas instalações padrão do Python)*
 
@@ -42,7 +44,7 @@ Esta ferramenta em Python automatiza o processo de download de anexos (submissõ
    Os downloads e ficheiros de configuração ficarão na mesma pasta do script.
 
 3. **Preparar os Ficheiros XML**:
-Copie o link da sua lista/biblioteca do SharePoint como um feed RSS (XML). Coloque esses links no ficheiro chamada `secrets.json` dentro da sua `BASE_FOLDER` (ou diretamente na `BASE_FOLDER` se a subpasta não existir).
+Copie o link da sua lista/biblioteca do SharePoint como um feed RSS (XML). Coloque esses links no ficheiro chamado `secrets.json` dentro da sua `BASE_FOLDER` (ou diretamente na `BASE_FOLDER` se a subpasta não existir).
 
 https://github.com/user-attachments/assets/13e1d43b-d690-403c-862b-077a32d4e4b1
 
@@ -93,7 +95,7 @@ This Python tool automates the process of downloading attachments (submissions) 
 - Python 3.x
 - Required Python packages:
   ```bash
-  pip install requests beautifulsoup4 python-telegram-bot
+  pip install requests beautifulsoup4
   ```
   *(Note: `tkinter` is required for the GUI, which is typically included with standard Python installations)*
   
