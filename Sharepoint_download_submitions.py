@@ -160,7 +160,7 @@ def download_file(url, folder, retries=6):
     while attempt < retries:
         try:
             wait_time = random.uniform(1, 2) * (2 ** attempt)
-            print(f"-> GET {url} (attempt {attempt+1}/{retries})")
+            #print(f"-> GET {url} (attempt {attempt+1}/{retries})")
             response = session.get(url, stream=True, timeout=30, allow_redirects=True)
             response.raise_for_status()
 
@@ -176,7 +176,7 @@ def download_file(url, folder, retries=6):
                         f.write(chunk)
 
             if os.path.exists(file_path) and os.path.getsize(file_path) > 0:
-                print(f"   -> saved file: {file_path}")
+                #print(f"   -> saved file: {file_path}")
                 return filename, "Sucesso"
             else:
                 return filename, "Falhou: ficheiro vazio"
