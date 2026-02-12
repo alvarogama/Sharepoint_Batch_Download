@@ -18,7 +18,7 @@ Esta ferramenta em Python automatiza o processo de download de anexos (submissõ
 
 - Python 3.6+
 - Pacotes Python necessários:
-  - pip install requests beautifulsoup4
+##pip install requests beautifulsoup4
 
 *(Nota: o `tkinter` é necessário para a GUI e normalmente já vem incluído nas instalações padrão do Python)*
 
@@ -30,8 +30,6 @@ Esta ferramenta em Python automatiza o processo de download de anexos (submissõ
   bash
   brew install python-tk
 
-
-
 ## Configuração
 
 1. **Clonar o repositório**.
@@ -42,16 +40,7 @@ Esta ferramenta em Python automatiza o processo de download de anexos (submissõ
 3. **Preparar os Ficheiros XML**:
 Copie o link da sua lista/biblioteca do SharePoint como um feed RSS (XML). Coloque esses links no ficheiro chamada `secrets.json` dentro da sua `BASE_FOLDER` (ou diretamente na `BASE_FOLDER` se a subpasta não existir).
 
-
 https://github.com/user-attachments/assets/13e1d43b-d690-403c-862b-077a32d4e4b1
-
-
-
-## Utilização
-
-Execute o script através do terminal (com o caminho dentro da pasta):
-python Sharepoint_download_submitions.py
-
 
 ### Autenticação
 Se o script não encontrar cookies válidos (ou se já tiverem expirado), surgirá uma janela popup.
@@ -61,13 +50,13 @@ Se o script não encontrar cookies válidos (ou se já tiverem expirado), surgir
 4. Copie os valores (ou todo o cabeçalho de cookies).
 5. Cole-os na janela popup do script.
 5. Em alternativa poderá colar os cookies  `rtFa` e `FedAuth` antes de executar o script, caso facilite.
-<video width="320" height="240" controls>
-  <source src="video.mov" type="video/mp4">
-</video>
 
 https://github.com/user-attachments/assets/8e6175a4-034b-40c9-a19d-a75820e02fd2
 
+## Utilização
 
+Execute o script através do terminal (com o caminho dentro da pasta):
+python Sharepoint_download_submitions.py
 
 ### Notificações no Telegram (Opcional)
 Quando solicitado pela GUI (ou editando manualmente o `secrets.json`), pode fornecer um Token de Bot e um ID de Chat do Telegram para receber notificações quando o processamento terminar.
@@ -113,30 +102,28 @@ This Python tool automates the process of downloading attachments (submissions) 
     brew install python-tk
 
 ## Setup
-
 1. **Clone the repository**.
 2. **Configure Paths**:
-   By default, the script uses the directory where it is located as the `BASE_FOLDER`.
+   By default, the script uses the folder where it is located as the `BASE_FOLDER`.
    Downloads and configuration files will be stored in the same folder as the script.
 
 3. **Prepare XML Files**:
-   Export your SharePoint list/library as an RSS Feed (XML). Place these XML files in a folder named `___Xml` inside your `BASE_FOLDER` (or directly in the `BASE_FOLDER` if the subfolder doesn't exist).
+   Copy the link of your SharePoint list/library as an RSS feed (XML). Place these links in the file named `secrets.json` inside your `BASE_FOLDER` (or directly in `BASE_FOLDER` if the subfolder does not exist).
 
-## Usage
-
-Run the script via the terminal:
-
-```bash
-python Sharepoint_download_submitions.py
-```
+https://github.com/user-attachments/assets/13e1d43b-d690-403c-862b-077a32d4e4b1
 
 ### Authentication
-If the script cannot find valid cookies (or if they have expired), a popup window will appear.
+If the script does not find valid cookies (or if they have expired), a popup window will appear.
+
 1. Log in to your SharePoint site in a web browser.
-2. Open Developer Tools (F12) -> **Application** (or Storage) -> **Cookies**.
-3. Locate the cookies named `rtFa` and `FedAuth`.
-4. Copy their values (or the entire cookie header string).
+2. Open Developer Tools (F12) -> **Network** -> **CTRL+R** (to refresh).
+3. Search for cookies named `rtFa` and `FedAuth` using the search bar and entering `cookie-domain:sharepoint.com`.
+4. Copy the values (or the entire cookie header).
 5. Paste them into the script's popup window.
+6. Alternatively, you can paste the `rtFa` and `FedAuth` cookies before running the script, if that is easier.
+
+https://github.com/user-attachments/assets/8e6175a4-034b-40c9-a19d-a75820e02fd2
+
 
 ### Telegram Notifications (Optional)
 When prompted by the GUI (or by editing `secrets.json` manually), you can provide a Telegram Bot Token and Chat ID to receive notifications when processing finishes.
