@@ -20,7 +20,7 @@ Esta ferramenta em Python automatiza o processo de download de anexos (submissõ
 - Pacotes Python necessários:
 - 1. requests
   2. beautifulsoup4
-**pip install requests beautifulsoup4**
+- **pip install requests beautifulsoup4**
 
 *(Nota: o `tkinter` é necessário para a GUI e normalmente já vem incluído nas instalações padrão do Python)*
 
